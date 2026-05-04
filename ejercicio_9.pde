@@ -5,21 +5,21 @@ void setup(){
 void draw(){
  background(255);
  
- int puntos = 6;
- float ancho = width / (puntos - 1);
+ int filas = 8;
+ int columnas = 8;
  
- stroke(0);
- noFill();
+ float ancho = width;
+ float alto = height;
  
- rect(0, 0, width, height);
- 
- for(int i = 0; i < puntos; i++){
-   float xArriba = i * ancho;
-   
-   for(int j = 0; j < puntos; j++){
-     float xAbajo = j * ancho;
+ for(int j = 0; j < filas; j++){
+   for(int i = 0; i < columnas; i++){
      
-     line(xArriba, 0, xAbajo, height);
+     float x = i * ancho;
+     
+     if(j % 2 == 1){
+       x += ancho / 2;
+     }
+     rect(x, j * alto, ancho, alto);
    }
  }
 }
