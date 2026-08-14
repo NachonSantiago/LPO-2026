@@ -1,0 +1,58 @@
+float circuloX = 100;
+float circuloY = 100;
+
+float radio = 25;
+float velocidad = 3;
+
+float rectX = 250;
+float rectY = 200;
+float rectW = 200;
+float rectH = 100;
+
+boolean colision = false;
+
+void setup() {
+size(700, 500);
+}
+
+void draw() {
+background(220);
+
+if (keyPressed) {
+if (keyCode == UP) circuloY -= velocidad;
+if (keyCode == DOWN) circuloY += velocidad;
+if (keyCode == LEFT) circuloX -= velocidad;
+if (keyCode == RIGHT) circuloX += velocidad;
+}
+
+colision = detectarColision();
+
+if (colision) {
+fill(255, 0, 0);
+} else {
+fill(0, 150, 255);
+}
+
+rect(rectX, rectY, rectW, rectH);
+
+fill(255, 200, 0);
+ellipse(circuloX, circuloY, radio * 2, radio * 2);
+
+fill(0);
+textSize(20);
+
+if (colision) {
+text("¡COLISIÓN!", 20, 30);
+} else {
+text("Sin colisión", 20, 30);
+}
+}
+
+boolean detectarColision() {
+float puntoX = constrain(circuloX, rectX, rectX + rectW);
+float puntoY = constrain(circuloY, rectY, rectY + rectH);
+
+float distancia = dist(circuloX, circuloY, puntoX, puntoY);
+
+return distancia <= radio;
+}
