@@ -1,0 +1,218 @@
+ArrayList<Cuadrado> tubos;
+Pelota bird;
+
+float ultimoPar = 0;
+int puntaje = 0;
+boolean gameOver = false;
+
+PVector G = new PVector(0, 0.5);
+
+void setup() {
+  size(800, 600);
+  tubos = new ArrayList<Cuadrado>();
+  reiniciar();
+}
+
+void draw() {
+  background(135, 206, 235);
+
+  if (!gameOver) {
+    AgregarTubos();
+
+    bird.addFuerza(G);
+    bird.mover();
+
+    for (Cuadrado t : tubos) {
+      t.mover();
+      t.mostrar();
+
+      if (t.colision(bird)) {
+        gameOver = true;
+      }
+
+      if (!t.punto && t.pos.x + t.ancho < bird.pos.x) {
+        t.punto = true;
+        puntaje++;
+      }
+    }
+
+    BorrarTubos();
+
+    if (bird.pos.y - bird.radio < 0 || bird.pos.y + bird.radio > height) {
+      gameOver = true;
+    }
+
+    bird.mostrar();
+
+    fill(255);
+    textAlign(CENTER);
+    textSize(40);
+    text(puntaje, width/2, 60);
+  } 
+  else {
+    for (Cuadrado t : tubos) {
+      t.mostrar();
+    }
+
+    bird.mostrar();
+
+    fill(0, 150);
+    rect(0, 0, width, height);
+
+    fill(255);
+    textAlign(CENTER);
+
+    textSize(60);
+    text("GAME OVER", width/2, height/2 - 40);
+
+    textSize(30);
+    text("Puntaje: " + puntaje, width/2, height/2 + 20);
+
+    textSize(22);
+    text("Presioná ESPACIO para reiniciar", width/2, height/2 + 70);
+  }
+}
+
+void keyPressed() {
+  if (key == ' ') {
+    if (gameOver) {
+      reiniciar();
+    } else {
+      bird.saltar();
+    }
+  }
+}
+
+void reiniciar() {
+  bird = new Pelota(150, height/2);
+  tubos.clear();
+  puntaje = 0;
+  gameOver = false;
+  ultimoPar = millis();
+}
+
+void AgregarTubos() {
+  float tActual = millis();
+  float dt = tActual - ultimoPar;
+
+  if (dt > 1800) {
+    float espacio = 170;
+    float altoArriba = random(100, 350);
+
+    tubos.add(new Cuadrado(width, 0, 70, altoArriba));
+    tubos.add(new Cuadrado(
+      width,
+      altoArriba + espacio,
+      70,
+      height - altoArriba - espacio
+    ));
+
+    ultimoPar = tActual;
+  }
+}
+
+void BorrarTubos() {
+  for (int i = tubos.size()-1; i >= 0; i--) {
+    Cuadrado Aux = tubos.get(i);
+
+    if (Aux.pos.x + Aux.ancho < 0) {
+      tubos.remove(i);
+    }
+  }
+}
+
+
+class Pelota {
+  PVector pos;
+  PVector vel;
+  PVector acc;
+
+  float radio = 20;
+
+  Pelota(float x, float y) {
+    pos = new PVector(x, y);
+    vel = new PVector(0, 0);
+    acc = new PVector(0, 0);
+  }
+
+  void addFuerza(PVector fuerza) {
+    acc.add(fuerza);
+  }
+
+  void mover() {
+    vel.add(acc);
+    vel.limit(10);
+    pos.add(vel);
+    acc.mult(0);
+  }
+
+  void saltar() {
+    vel.y = -9;
+  }
+
+  void mostrar() {
+    fill(255, 220, 0);
+    ellipse(pos.x, pos.y, radio*2, radio*2);
+
+    fill(0);
+    ellipse(pos.x + 7, pos.y - 7, 5, 5);
+
+    fill(255, 100, 0);
+    triangle(
+      pos.x + radio,
+      pos.y,
+      pos.x + radio + 12,
+      pos.y - 5,
+      pos.x + radio + 12,
+      pos.y + 5
+    );
+  }
+}
+
+
+class Cuadrado {
+  PVector pos;
+  float ancho;
+  float alto;
+  float velocidad = 4;
+
+  boolean punto = false;
+
+  Cuadrado(float x, float y, float ancho, float alto) {
+    pos = new PVector(x, y);
+    this.ancho = ancho;
+    this.alto = alto;
+  }
+
+  void mover() {
+    pos.x -= velocidad;
+  }
+
+  void mostrar() {
+    fill(40, 180, 70);
+    rect(pos.x, pos.y, ancho, alto);
+
+    fill(30, 150, 60);
+
+    if (pos.y == 0) {
+      rect(pos.x - 5, pos.y + alto - 25, ancho + 10, 25);
+    } else {
+      rect(pos.x - 5, pos.y, ancho + 10, 25);
+    }
+  }
+
+  boolean colision(Pelota p) {
+    float cercanoX = constrain(p.pos.x, pos.x, pos.x + ancho);
+    float cercanoY = constrain(p.pos.y, pos.y, pos.y + alto);
+
+    float distanciaX = p.pos.x - cercanoX;
+    float distanciaY = p.pos.y - cercanoY;
+
+    float distancia = sqrt(
+      distanciaX * distanciaX +
+      distanciaY * distanciaY
+    );
+
+    return distancia < p.radio;
+  }
+}
